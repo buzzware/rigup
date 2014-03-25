@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+require "rubygems" # ruby1.9 doesn't "require" it though
+require_relative '../lib/rigup.rb'
+#require "rigup"
+
+Rigup::Cli.start(ARGV)

@@ -1,0 +1,20 @@
+From site root :
+
+> cd /var/www
+> rigup new mysite repo_url
++ make dir mysite
++ create rigup.yml if doesn't exist, including option values
++ make dir mysite/releases
++ make dir mysite/shared
++ git clone repo_url mysite/releases/20140328234123
++ installing
+
+
+> cd mysite
+> rigup update
++ using plan rigup.yml
+
+
+
+1. make runnable from site root folder for
+

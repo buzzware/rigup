@@ -2,6 +2,7 @@
 $:.push File.expand_path("../lib", __FILE__)
 require 'rspec'
 require 'rigup'
+require_relative 'spec_utils'
 
 include Rigup
 

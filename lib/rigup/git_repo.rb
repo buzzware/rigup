@@ -1,3 +1,5 @@
+require 'git'
+
 module Rigup
 	class GitRepo < Rigup::Contextable
 
@@ -14,15 +16,15 @@ module Rigup
 		end
 
 		def open(aPath)
-			@git = Git.open(aPath)
+			@git = ::Git.open(aPath)
 		end
 
 		def init(*args)
-			@git = Git.init(*args)
+			@git = ::Git.init(*args)
 		end
 
 		def clone(aUrl,aPath)
-			@git = Git::clone(aUrl,aPath)
+			@git = ::Git::clone(aUrl,aPath)
 		end
 
 		def open?
@@ -46,7 +48,7 @@ module Rigup
 		def commit_all(*args)
 			result = begin
 				@git.commit_all(*args)
-			rescue Git::GitExecuteError => e
+			rescue ::Git::GitExecuteError => e
 				if e.message.index("nothing to commit (working directory clean)")
 					nil
 				else
@@ -88,8 +90,10 @@ module Rigup
 
 		# http://stackoverflow.com/questions/2866358/git-checkout-only-files-without-repository
 		# http://www.clientcide.com/best-practices/exporting-files-from-git-similar-to-svn-export/
-		def export
+		def export(aDest)
 			#rsync --exclude=.git /source/directory/ user@remote-server.com:/target-directory
+			FileUtils.cp_r(path,aDest)
+			FileUtils.rm_rf(File.expand_path('.git',aDest))
 		end
 
 		def branch
@@ -100,7 +104,7 @@ module Rigup
 			@git.log.first
 		end
 
-		# git --no-pager diff --name-status 26bb87c3981 191d64820f2b
+		# ::Git --no-pager diff --name-status 26bb87c3981 191d64820f2b
 		# result is array of paths prefixed with status letter then a tab
 		# see http://git-scm.com/docs/git-diff under --diff-filter=
 		# Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R), have their type (i.e. regular file, symlink, submodule, ...) changed (T)

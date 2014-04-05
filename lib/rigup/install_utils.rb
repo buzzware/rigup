@@ -1,6 +1,10 @@
 module Rigup
 	class InstallUtils < Rigup::Contextable
 
+		def initialise(aContext)
+			super
+		end
+
 		def select_variant_file(aFile,aExtendedExtension=false)
 			ext = Buzztools::File.file_extension(aFile,aExtendedExtension)
 			no_ext = Buzztools::File.file_no_extension(aFile,aExtendedExtension)
@@ -74,12 +78,13 @@ module Rigup
 			internal_permissions(aPath, aKind)
 		end
 
-		def ensure_link(aTo,aFrom,aDir=nil,aUserGroup=nil,aSudo='')
+		def ensure_link(aTo,aFrom) #,aDir=nil,aUserGroup=nil,aSudo='')
+			raise "Must supply from" if !aFrom
 			cmd = []
-			cmd << "cd #{aDir}" if aDir
+			#cmd << "cd #{aDir}" if aDir
 			cmd << "#{context.sudo} rm -rf #{aFrom}"
 			cmd << "#{context.sudo} ln -sf #{aTo} #{aFrom}"
-			cmd << "#{context.sudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
+			#cmd << "#{context.sudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
 			run cmd.join(' && ')
 		end
 

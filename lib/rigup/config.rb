@@ -4,7 +4,9 @@ module Rigup
 
 		DEFAULTS = {
 			site_dir: String,
-			git_url: String
+			git_url: String,
+			branch: String,
+			commit: String
 		}
 
 		def initialize(aValues=nil)

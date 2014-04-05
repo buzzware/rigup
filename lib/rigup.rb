@@ -8,6 +8,9 @@
 require "thor"
 require "buzztools"
 require "logger"
+require 'yaml'
+#require 'popen4'
+require 'buzztools/extras/shell_extras'
 
 #Dir.chdir(File.dirname(__FILE__)) { Dir['rigup/*.rb'] }.each {|f| require f }
 require_relative "rigup/version"

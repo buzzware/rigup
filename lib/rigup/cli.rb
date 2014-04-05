@@ -16,7 +16,7 @@ module Rigup
 
 		#argument :variant, :required => true, :type => :string, :desc => "whether live or stage or otherwise"
 
-		attr_reader :context
+		attr_reader :context, :release_path
 
 		no_commands do
 
@@ -25,6 +25,10 @@ module Rigup
 				@initialised = true
 				aPath ||= aConfig[:site_dir] || Dir.pwd
 				@site_dir = Buzztools::File.real_path(aPath) rescue File.expand_path(aPath)
+				if File.exists?(f=File.join(@site_dir,'rigup.yml'))
+					file_config = YAML.load(String.from_file(f))
+					aConfig.merge!(file_config)
+				end
 				config = Rigup::Config.new(aConfig.merge(site_dir: @site_dir))
 				@context = Rigup::Context.new(
 					config: config,
@@ -32,6 +36,7 @@ module Rigup
 					pwd: Dir.pwd,
 					stage: 'live'
 				)
+				@install_utils = Rigup::InstallUtils.new(@context)
 			end
 
 			def site_dir
@@ -45,6 +50,10 @@ module Rigup
 			def config
 				@context.config
 			end
+			
+			def repo
+				@repo ||= GitRepo.new(@context)
+			end
 
 			# Prepares repo in cache dir for site
 			# requires params: repo_url,site
@@ -52,22 +61,21 @@ module Rigup
 				url = config[:git_url]
 				wd = cache_dir
 
-				@repo = GitRepo.new
 				suitable = if File.exists?(wd)
-					@repo.open wd
-					@repo.origin.url==url
+					repo.open wd
+					repo.origin.url==url
 				else
 					false
 				end
 
 				if suitable
-					@repo.fetch
+					repo.fetch
 				else
 					if File.exists? wd
 						#raise RuntimeError.new('almost did bad delete') if !@core.cache_dir || @core.cache_dir.length<3 || !wd.begins_with?(@core.cache_dir)
 						FileUtils.rm_rf wd
 					end
-					@repo.clone(url, wd)
+					repo.clone(url, wd)
 				end
 			end
 
@@ -80,12 +88,13 @@ module Rigup
 				#wd = @core.working_dir_from_site(site)
 				branch = config[:branch] || 'master'
 				commit = config[:commit]
-				@repo.checkout(commit,branch)
+				repo.open(cache_dir)
+				repo.checkout(commit,branch)
 				#perhaps use reset --hard here
 				if (commit)
-					@repo.merge(commit,['--ff-only'])
+					repo.merge(commit,['--ff-only'])
 				else
-					@repo.merge('origin/'+branch,['--ff-only'])
+					repo.merge('origin/'+branch,['--ff-only'])
 				end
 			end
 
@@ -98,18 +107,19 @@ module Rigup
 
 			#desc "release", "create a new release from cache"
 			def release
-				init
-				@release = Time.now.strftime('%Y%m%d%H%M%S')
-				@release_path = File.expand_path(File.join(site_dir,'releases',@release))
-				@repo.export(@release_path)
+				#init
+				release = Time.now.strftime('%Y%m%d%H%M%S')
+				@release_path = File.expand_path(File.join(site_dir,'releases',release))
+				repo.open(cache_dir)
+				repo.export(@release_path)
 				return @release_path
 			end
 
 			#desc "link_live", "symlink the latest release as current"
 			def link_live
-				init
-				ensure_link(@release_path,@current_path,nil,"#{@user}:#{@group}")
-				after_link_live if respond_to? :after_link_live
+				#init
+				@install_utils.ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')))
+				#after_link_live if respond_to? :after_link_live
 			end
 
 			#desc "migrate", "migrate the database"
@@ -158,16 +168,15 @@ module Rigup
 			context.config.to_hash.filter_exclude(:site_dir).to_yaml.to_file(File.join(site_dir,'rigup.yml'))
 		end
 
-		# desc "deploy", "deploy the given variant of this project"
-		# def deploy
-		# 	init
-		# 	update_cache
-		# 	release
-		# 	install
-		# 	#migrate
-		# 	#link_live
-		# 	#restart
-		# 	#fixups_after_restart
-		# end
+		desc "deploy", "deploy the given variant of this project"
+		def deploy(aPath)
+			init(aPath)
+			update_cache
+			release
+			# install
+			# migrate
+			link_live
+			# restart
+		end
 	end
 end

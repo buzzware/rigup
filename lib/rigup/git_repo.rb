@@ -100,6 +100,10 @@ module Rigup
 			@git.current_branch
 		end
 
+		def sha
+			head.sha
+		end
+
 		def head
 			@git.log.first
 		end

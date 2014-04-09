@@ -25,6 +25,7 @@ module Rigup
 				@initialised = true
 				aPath ||= aConfig[:site_dir] || Dir.pwd
 				@site_dir = Buzztools::File.real_path(aPath) rescue File.expand_path(aPath)
+				@releases_path = File.join(@site_dir,'releases')
 				if File.exists?(f=File.join(@site_dir,'rigup.yml'))
 					file_config = YAML.load(String.from_file(f))
 					aConfig.merge!(file_config)
@@ -109,10 +110,18 @@ module Rigup
 			def release
 				#init
 				release = Time.now.strftime('%Y%m%d%H%M%S')
-				@release_path = File.expand_path(File.join(site_dir,'releases',release))
+				@release_path = File.expand_path(release,@releases_path)
 				repo.open(cache_dir)
 				repo.export(@release_path)
+				release_config = context.config.to_hash
+				release_config[:commit] = repo.head.sha
+				release_config[:branch] = repo.branch
+				release_config.to_yaml.to_file(File.join(@release_path,'rigup.yml'))
 				return @release_path
+			end
+
+			def install
+				@install_utils.run config[:install_command],@release_path
 			end
 
 			#desc "link_live", "symlink the latest release as current"
@@ -125,30 +134,90 @@ module Rigup
 			#desc "migrate", "migrate the database"
 			def	migrate
 		    @rails_env ||= "production"
-		    run "rake RAILS_ENV=#{@rails_env} db:migrate",@release_path
+		    @install_utils.run "rake RAILS_ENV=#{@rails_env} db:migrate",@release_path
 		  end
 
 			#desc "cleanup", "keep @keep_releases, delete older ones"
 			def cleanup
+				@releases = @install_utils.run("ls -x #{@releases_path}").split.sort
 		    count = (@keep_releases || 3).to_i
-		    if count >= releases.length
-		      logger.important "no old releases to clean up"
+		    if count >= @releases.length
+		      @context.logger.info "no old releases to clean up"
 		    else
-		      logger.info "keeping #{count} of #{releases.length} deployed releases"
+			    @context.logger.info "keeping #{count} of #{@releases.length} deployed releases"
 
 		      directories = (@releases - @releases.last(count)).map { |r|
 		        File.join(@releases_path, r)
 					}.join(" ")
 
-		      run "rm -rf #{directories}"
+		      @install_utils.run "rm -rf #{directories}"
 		    end
 			end
 
-			#desc "restart", "restart the web server"
-			def restart
-				run "touch current/tmp/restart.txt && chown #{@user}:#{@group} current/tmp/restart.txt"
-				run "/etc/init.d/apache2 restart --force-reload"
+			# #desc "restart", "restart the web server"
+			# def restart
+			# 	run "touch current/tmp/restart.txt && chown #{@user}:#{@group} current/tmp/restart.txt"
+			# 	run "/etc/init.d/apache2 restart --force-reload"
+			# end
+
+			def is_rails?
+				File.exists?(File.expand_path('Rakefile',release_path))
 			end
+
+DEPLOY_THOR_CONTENT = <<-EOS
+# This file will be called deploy.thor and lives in the root of the project repositiory, so it is version controlled
+# and can be freely modified to suit the project requirements
+class Deploy < RigupBaseDeploy  # from gem, sets context and loads rigup.yml into config from site_dir
+
+	# You are free to modify these two tasks to suit your requirements
+
+	desc 'install','install the freshly delivered files'
+	def install
+		@release_path = File.basedir(__FILE__)
+		@shared_path = File.expand_path('../../shared',@release_path)
+		case config.stage
+			when 'live'
+				@user = 'apache'
+				@group = 'apache'
+			when 'staging'
+				@user = 'apache'
+				@group = 'apache'
+			else
+				raise 'invalid stage'
+		end
+
+		select_variant_file("#{@release_path}/config/database.yml")
+		select_variant_file("#{@release_path}/yore.config.xml")
+		select_variant_file("#{@release_path}/config/app_config.xml")
+		select_variant_file("#{@release_path}/system/apache.site")
+		#make_public_cache_dir("#{@release_path}/public/cache")
+
+		ensure_link("#{@shared_path}/log","#{@release_path}/log")
+		ensure_link("#{@shared_path}/pids","#{@release_path}/tmp/pids")
+		ensure_link("#{@shared_path}/uploads","#{@release_path}/tmp/uploads")
+		ensure_link("#{@shared_path}/system","#{@release_path}/public/system")
+
+		#run "touch #{@shared_path}/log/production.log && chown #{@user}:#{@group} #{@shared_path}/log/production.log && chmod 666 #{@shared_path}/log/production.log"
+	end
+
+	desc 'restart','restart the web server'
+	def restart
+		run "touch current/tmp/restart.txt" # && chown user:group current/tmp/restart.txt"
+		run "/etc/init.d/apache2 restart --force-reload"
+	end
+
+end
+EOS
+
+			def write_deploy_thor
+				DEPLOY_THOR_CONTENT.to_file File.expand_path('deploy.thor',site_dir)
+			end
+
+			def call_release_command(aCommand)
+				return unless cmdline = config["#{aCommand}_command".to_sym].to_s.strip.to_nil
+				@install_utils.run cmdline, @release_path
+			end
+
 		end
 
 		public
@@ -166,6 +235,7 @@ module Rigup
 
 			#+ create rigup.yml if doesn't exist, including option values
 			context.config.to_hash.filter_exclude(:site_dir).to_yaml.to_file(File.join(site_dir,'rigup.yml'))
+			write_deploy_thor
 		end
 
 		desc "deploy", "deploy the given variant of this project"
@@ -173,10 +243,10 @@ module Rigup
 			init(aPath)
 			update_cache
 			release
-			# install
-			# migrate
+			call_release_command(:install)     # call install_command if defined eg. defaults to "thor deploy:install" eg. make changes to files
 			link_live
-			# restart
+			call_release_command(:restart)     # call restart_command, defaults to "thor deploy:restart" eg. restart passenger
+			cleanup
 		end
 	end
 end

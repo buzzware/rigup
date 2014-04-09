@@ -3,8 +3,8 @@ module Rigup
 	class Contextable
 		attr_accessor :context
 
-		def initialize(aContext)
-			@context = aContext
+		def initialize(aContext=nil)
+			@context = (aContext || Rigup::Context.new)
 		end
 
 		def run(aCommand,aDir=nil)

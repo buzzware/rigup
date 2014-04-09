@@ -1,23 +1,14 @@
-#begin
-#  require "bundler/setup"
-#rescue LoadError
-#  require "rubygems"
-#  require "bundler/setup"
-#end
-#
-require "thor"
-require "buzztools"
-require "logger"
+require 'thor'
+require 'buzztools'
+require 'logger'
 require 'yaml'
-#require 'popen4'
 require 'buzztools/extras/shell_extras'
 
-#Dir.chdir(File.dirname(__FILE__)) { Dir['rigup/*.rb'] }.each {|f| require f }
 require_relative "rigup/version"
 require_relative "rigup/config"
 require_relative "rigup/context"
-require_relative "rigup/contextable"
-require_relative "rigup/git_repo"
+require_relative "rigup/runability"
 require_relative "rigup/install_utils"
-require_relative "rigup/utils"
+require_relative "rigup/git_repo"
 require_relative "rigup/cli"
+require_relative "rigup/deploy_base"

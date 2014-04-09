@@ -1,11 +1,17 @@
 require 'git'
 
 module Rigup
-	class GitRepo < Rigup::Contextable
+	class GitRepo
+
+		include Rigup::Runability
 
 		attr_reader :git,:configured
 
 		GIT_METHODS = [:commit,:add,:reset_hard,:path,:clone,:log,:size,:branches,:status,:remotes,:pull,:fetch,:push,:merge]
+
+		def initialize(aContext=nil)
+			@context = (aContext || Rigup::Context.new)
+		end
 
 		def method_missing(sym, *args, &block)
 			if @git && GIT_METHODS.include?(sym)

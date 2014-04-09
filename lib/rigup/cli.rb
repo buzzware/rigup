@@ -1,5 +1,9 @@
 module Rigup
 	class Cli < Thor
+
+		include Rigup::Runability
+		include Rigup::InstallUtils
+
 		attr_reader :context, :release_path
 
 		no_commands do
@@ -18,10 +22,8 @@ module Rigup
 				@context = Rigup::Context.new(
 					config: config,
 					logger: ::Logger.new(STDOUT),
-					pwd: Dir.pwd,
-					stage: 'live'
+					pwd: Dir.pwd
 				)
-				@install_utils = Rigup::InstallUtils.new(@context)
 			end
 
 			def site_dir
@@ -98,11 +100,11 @@ module Rigup
 			end
 
 			def link_live
-				@install_utils.ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')))
+				ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')))
 			end
 
 			def cleanup
-				@releases = @install_utils.run("ls -x #{@releases_path}").split.sort
+				@releases = run("ls -x #{@releases_path}").split.sort
 		    count = (@keep_releases || 3).to_i
 		    if count >= @releases.length
 		      @context.logger.info "no old releases to clean up"
@@ -113,62 +115,13 @@ module Rigup
 		        File.join(@releases_path, r)
 					}.join(" ")
 
-		      @install_utils.run "rm -rf #{directories}"
+		      run "rm -rf #{directories}"
 		    end
-			end
-
-DEPLOY_THOR_CONTENT = <<-EOS
-# This file will be called deploy.thor and lives in the root of the project repositiory, so it is version controlled
-# and can be freely modified to suit the project requirements
-class Deploy < RigupBaseDeploy  # from gem, sets context and loads rigup.yml into config from site_dir
-
-	# You are free to modify these two tasks to suit your requirements
-
-	desc 'install','install the freshly delivered files'
-	def install
-		@release_path = File.basedir(__FILE__)
-		@shared_path = File.expand_path('../../shared',@release_path)
-		case config.stage
-			when 'live'
-				@user = 'apache'
-				@group = 'apache'
-			when 'staging'
-				@user = 'apache'
-				@group = 'apache'
-			else
-				raise 'invalid stage'
-		end
-
-		select_variant_file("#{@release_path}/config/database.yml")
-		select_variant_file("#{@release_path}/yore.config.xml")
-		select_variant_file("#{@release_path}/config/app_config.xml")
-		select_variant_file("#{@release_path}/system/apache.site")
-		#make_public_cache_dir("#{@release_path}/public/cache")
-
-		ensure_link("#{@shared_path}/log","#{@release_path}/log")
-		ensure_link("#{@shared_path}/pids","#{@release_path}/tmp/pids")
-		ensure_link("#{@shared_path}/uploads","#{@release_path}/tmp/uploads")
-		ensure_link("#{@shared_path}/system","#{@release_path}/public/system")
-
-		#run "touch #{@shared_path}/log/production.log && chown #{@user}:#{@group} #{@shared_path}/log/production.log && chmod 666 #{@shared_path}/log/production.log"
-	end
-
-	# desc 'restart','restart the web server'
-	# def restart
-	# 	run "touch current/tmp/restart.txt" # && chown user:group current/tmp/restart.txt"
-	# 	run "/etc/init.d/apache2 restart --force-reload"
-	# end
-
-end
-EOS
-
-			def write_deploy_thor
-				DEPLOY_THOR_CONTENT.to_file File.expand_path('deploy.thor',site_dir)
 			end
 
 			def call_release_command(aCommand)
 				return unless cmdline = config["#{aCommand}_command".to_sym].to_s.strip.to_nil
-				@install_utils.run cmdline, @release_path
+				run cmdline, @release_path
 			end
 
 		end
@@ -188,11 +141,10 @@ EOS
 
 			#+ create rigup.yml if doesn't exist, including option values
 			context.config.to_hash.filter_exclude(:site_dir).to_yaml.to_file(File.join(site_dir,'rigup.yml'))
-			write_deploy_thor
 		end
 
-		desc "deploy", "deploy the given variant of this project"
-		def deploy(aPath)
+		desc "deploy [PATH]", "deploy the given site"
+		def deploy(aPath=nil)
 			init(aPath)
 			update_cache
 			release

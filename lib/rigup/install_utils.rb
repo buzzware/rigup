@@ -1,16 +1,12 @@
 module Rigup
-	class InstallUtils < Rigup::Contextable
+	module InstallUtils
 
-		def initialise(aContext)
-			super
-		end
-
-		def select_variant_file(aFile,aExtendedExtension=false)
-			ext = Buzztools::File.file_extension(aFile,aExtendedExtension)
-			no_ext = Buzztools::File.file_no_extension(aFile,aExtendedExtension)
+		def select_suffixed_file(aFile,aExtendedExtension=false)
+			ext = Buzztools::File.extension(aFile,aExtendedExtension)
+			no_ext = Buzztools::File.no_extension(aFile,aExtendedExtension)
 			dir = File.dirname(aFile)
-			run "#{context.sudo} mv -f #{no_ext}.#{context.variant}.#{ext} #{aFile}"
-			run "#{context.sudo} rm -f #{no_ext}.*.#{ext}"
+			run "#{@context.sudo} mv -f #{no_ext}.#{@context.config[:stage]}.#{ext} #{aFile}"
+			run "#{@context.sudo} rm -f #{no_ext}.*.#{ext}"
 		end
 
 		# Especially for modifiying behaviour eg. of FCKEditor without upsetting the standard files
@@ -21,8 +17,8 @@ module Rigup
 		def override_folder(aFolder,aOverrideFolder=nil,aRemove=true)
 			aFolder = aFolder.desuffix('/')
 			aOverrideFolder ||= (aFolder+'_override')
-			run "#{context.sudo} cp -vrf #{aOverrideFolder}/* #{aFolder}/"
-			run "#{context.sudo} rm -rf #{aOverrideFolder}" if aRemove
+			run "#{@context.sudo} cp -vrf #{aOverrideFolder}/* #{aFolder}/"
+			run "#{@context.sudo} rm -rf #{aOverrideFolder}" if aRemove
 		end
 
 
@@ -31,7 +27,7 @@ module Rigup
 			aUser ||= @user
 			aGroup ||= @group
 
-			run "#{context.sudo} chown -R #{aUser}:#{aGroup} #{aPath.ensure_suffix('/')}"
+			run "#{@context.sudo} chown -R #{aUser}:#{aGroup} #{aPath.ensure_suffix('/')}"
 			run_for_all("chmod 755",aPath,:dirs)									# !!! perhaps reduce other permissions
 			run_for_all("chmod 644",aPath,:files)
 			run_for_all("chmod g+s",aPath,:dirs)
@@ -63,7 +59,7 @@ module Rigup
 					#permissions_for_web_writable("#{aPath}/tmp")
 					make_public_cache_dir("#{aPath}/tmp")
 
-					run "#{context.sudo} chown #{@apache_user} #{aPath}/config/environment.rb" unless DEV_MODE	# very important for passenger, which uses the owner of this file to run as
+					run "#{@context.sudo} chown #{@apache_user} #{aPath}/config/environment.rb" unless DEV_MODE	# very important for passenger, which uses the owner of this file to run as
 
 				when 'spree' then
 					internal_permissions(aPath,'rails')
@@ -82,14 +78,14 @@ module Rigup
 			raise "Must supply from" if !aFrom
 			cmd = []
 			#cmd << "cd #{aDir}" if aDir
-			cmd << "#{context.sudo} rm -rf #{aFrom}"
-			cmd << "#{context.sudo} ln -sf #{aTo} #{aFrom}"
-			#cmd << "#{context.sudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
+			cmd << "#{@context.sudo} rm -rf #{aFrom}"
+			cmd << "#{@context.sudo} ln -sf #{aTo} #{aFrom}"
+			#cmd << "#{@context.sudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
 			run cmd.join(' && ')
 		end
 
 		def make_public_cache_dir(aStartPath)
-			run "#{context.sudo} mkdir -p #{aStartPath}"
+			run "#{@context.sudo} mkdir -p #{aStartPath}"
 			permissions_for_web(aStartPath)
 			permissions_for_web_writable(aStartPath)
 		end

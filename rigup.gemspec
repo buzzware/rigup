@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
 	s.add_runtime_dependency('highline')
 	s.add_runtime_dependency('git')
 	#s.add_runtime_dependency('middleman')
-	#s.add_runtime_dependency('buzztools')
+	s.add_runtime_dependency('buzztools')
 	s.add_runtime_dependency('POpen4')
 	# https://github.com/geemus/formatador
 	#s.add_runtime_dependency('bitbucket_rest_api')

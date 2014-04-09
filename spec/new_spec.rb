@@ -76,7 +76,7 @@ EOS
 			release_path.should =~ /#{Time.now.strftime('%Y%m%d%H')}/
 
 			# Release method should write a rigup.yml including branch, commit, stage etc (should not be in repo)
-			# RigupBaseDeploy then reads this and makes it accessible to install and restart methods
+			# Rigup::DeployBase then reads this and makes it accessible to install and restart methods
 			# Then we can do things like displaying git commit hash on page as the site knows its own full identity
 			release_config = YAML.load_file("mysite/releases/#{release_path}/rigup.yml")
 			release_config.should be_a Hash

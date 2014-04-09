@@ -1,15 +1,9 @@
 module Rigup
-
-	class Contextable
-		attr_accessor :context
-
-		def initialize(aContext=nil)
-			@context = (aContext || Rigup::Context.new)
-		end
+	module Runability
 
 		def run(aCommand,aDir=nil)
-			context.logger.debug aCommand
-			response = ::POpen4::shell(aCommand,aDir || context.pwd)
+			@context.logger.debug aCommand
+			response = ::POpen4::shell(aCommand,aDir || @context.pwd)
 			raise Error, "Command Failed" unless (response && response[:exitcode]==0)
 			return response[:stdout]
 		end
@@ -33,6 +27,6 @@ module Rigup
 			cmd = cmd.join(' ')
 			run cmd
 		end
-	end
 
+	end
 end

@@ -1,21 +1,5 @@
-#require_relative "../lib/rigup"
-#
-#begin
-#  RCat::Application.new(ARGV).run
-#rescue Errno::ENOENT => err
-#  abort "rcat: #{err.message}"
-#rescue OptionParser::InvalidOption => err
-#  abort "rcat: #{err.message}\nusage: rcat [-bns] [file ...]"
-#end
-#
-#
-#
-
 module Rigup
 	class Cli < Thor
-
-		#argument :variant, :required => true, :type => :string, :desc => "whether live or stage or otherwise"
-
 		attr_reader :context, :release_path
 
 		no_commands do
@@ -84,9 +68,6 @@ module Rigup
 			# Should call prepare_cache first to create @repo
 			# requires params: branch and/or commit
 			def checkout_branch_commit
-				#url = @params['repo_url']
-				#site = @params['site']
-				#wd = @core.working_dir_from_site(site)
 				branch = config[:branch] || 'master'
 				commit = config[:commit]
 				repo.open(cache_dir)
@@ -99,16 +80,12 @@ module Rigup
 				end
 			end
 
-			#desc "update_cache", "update the cache"
 		  def update_cache(aPath=nil)
-			  #init
 				prepare_cache
 			  checkout_branch_commit
 		  end
 
-			#desc "release", "create a new release from cache"
 			def release
-				#init
 				release = Time.now.strftime('%Y%m%d%H%M%S')
 				@release_path = File.expand_path(release,@releases_path)
 				repo.open(cache_dir)
@@ -120,24 +97,10 @@ module Rigup
 				return @release_path
 			end
 
-			def install
-				@install_utils.run config[:install_command],@release_path
-			end
-
-			#desc "link_live", "symlink the latest release as current"
 			def link_live
-				#init
 				@install_utils.ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')))
-				#after_link_live if respond_to? :after_link_live
 			end
 
-			#desc "migrate", "migrate the database"
-			def	migrate
-		    @rails_env ||= "production"
-		    @install_utils.run "rake RAILS_ENV=#{@rails_env} db:migrate",@release_path
-		  end
-
-			#desc "cleanup", "keep @keep_releases, delete older ones"
 			def cleanup
 				@releases = @install_utils.run("ls -x #{@releases_path}").split.sort
 		    count = (@keep_releases || 3).to_i
@@ -152,16 +115,6 @@ module Rigup
 
 		      @install_utils.run "rm -rf #{directories}"
 		    end
-			end
-
-			# #desc "restart", "restart the web server"
-			# def restart
-			# 	run "touch current/tmp/restart.txt && chown #{@user}:#{@group} current/tmp/restart.txt"
-			# 	run "/etc/init.d/apache2 restart --force-reload"
-			# end
-
-			def is_rails?
-				File.exists?(File.expand_path('Rakefile',release_path))
 			end
 
 DEPLOY_THOR_CONTENT = <<-EOS
@@ -200,11 +153,11 @@ class Deploy < RigupBaseDeploy  # from gem, sets context and loads rigup.yml int
 		#run "touch #{@shared_path}/log/production.log && chown #{@user}:#{@group} #{@shared_path}/log/production.log && chmod 666 #{@shared_path}/log/production.log"
 	end
 
-	desc 'restart','restart the web server'
-	def restart
-		run "touch current/tmp/restart.txt" # && chown user:group current/tmp/restart.txt"
-		run "/etc/init.d/apache2 restart --force-reload"
-	end
+	# desc 'restart','restart the web server'
+	# def restart
+	# 	run "touch current/tmp/restart.txt" # && chown user:group current/tmp/restart.txt"
+	# 	run "/etc/init.d/apache2 restart --force-reload"
+	# end
 
 end
 EOS
@@ -244,8 +197,10 @@ EOS
 			update_cache
 			release
 			call_release_command(:install)     # call install_command if defined eg. defaults to "thor deploy:install" eg. make changes to files
+			call_release_command(:block)
 			link_live
 			call_release_command(:restart)     # call restart_command, defaults to "thor deploy:restart" eg. restart passenger
+			call_release_command(:unblock)
 			cleanup
 		end
 	end

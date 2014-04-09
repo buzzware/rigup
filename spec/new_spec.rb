@@ -54,7 +54,7 @@ EOS
 	describe "Given new project" do
 
 		it "deploy should update_cache, install and link_live" do
-			Rigup::Cli.any_instance.stub(:migrate => true, :restart => true, :install => true)
+			#Rigup::Cli.any_instance.stub(:restart => true, :install => true)
 			new_site_process('https://github.com/buzzware/underscore_plus.git')
 			::Rigup::GitRepo.any_instance.stub(:clone) do |aUrl,aPath|
 				mock_get_repo(aUrl,aPath)

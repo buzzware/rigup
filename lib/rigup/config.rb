@@ -8,8 +8,10 @@ module Rigup
 			branch: String,
 			commit: String,
 			stage: 'live',    # or 'staging' or 'development'
+			block_command: nil,
 			install_command: 'thor deploy:install',
-			restart_command: 'thor deploy:restart'
+			restart_command: 'thor deploy:restart',
+			unblock_command: nil,
 		}
 
 		def initialize(aValues=nil)

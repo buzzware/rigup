@@ -1,11 +1,14 @@
 From site root :
 
 > cd /var/www
-> rigup new mysite repo_url
+> rigup new repo_url mysite
 + make dir mysite
 + create rigup.yml if doesn't exist, including option values
 + make dir mysite/releases
 + make dir mysite/shared
+
+> rigup deploy mysite
+
 + git clone repo_url mysite/releases/20140328234123
 + installing
 
@@ -13,8 +16,4 @@ From site root :
 > cd mysite
 > rigup update
 + using plan rigup.yml
-
-
-
-1. make runnable from site root folder for
 

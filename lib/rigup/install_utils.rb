@@ -74,13 +74,12 @@ module Rigup
 			internal_permissions(aPath, aKind)
 		end
 
-		def ensure_link(aTo,aFrom) #,aDir=nil,aUserGroup=nil,aSudo='')
+		def ensure_link(aTo,aFrom,aUserGroup=nil,aSudo='')
 			raise "Must supply from" if !aFrom
 			cmd = []
-			#cmd << "cd #{aDir}" if aDir
-			cmd << "#{@context.sudo} rm -rf #{aFrom}"
-			cmd << "#{@context.sudo} ln -sf #{aTo} #{aFrom}"
-			#cmd << "#{@context.sudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
+			cmd << "#{aSudo} rm -rf #{aFrom}"
+			cmd << "#{aSudo} ln -sf #{aTo} #{aFrom}"
+			cmd << "#{aSudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
 			run cmd.join(' && ')
 		end
 

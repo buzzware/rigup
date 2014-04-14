@@ -36,7 +36,8 @@ Gem::Specification.new do |s|
 	s.add_runtime_dependency('git')
 	#s.add_runtime_dependency('middleman')
 	s.add_runtime_dependency('buzztools')
-	s.add_runtime_dependency('POpen4')
+	#s.add_runtime_dependency('POpen4')
+	s.add_runtime_dependency('session')
 	# https://github.com/geemus/formatador
 	#s.add_runtime_dependency('bitbucket_rest_api')
 	#s.add_runtime_dependency('osx_keychain')

@@ -3,6 +3,9 @@ module Rigup
 	class Config < Buzztools::Config
 
 		DEFAULTS = {
+			app_name: String,
+			user: String,
+			group: 'www',
 			site_dir: String,
 			git_url: String,
 			branch: String,

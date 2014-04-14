@@ -121,7 +121,9 @@ module Rigup
 
 			def call_release_command(aCommand)
 				return unless cmdline = config["#{aCommand}_command".to_sym].to_s.strip.to_nil
-				run cmdline, @release_path
+				cd @release_path do
+					run cmdline
+				end
 			end
 
 		end
@@ -130,10 +132,13 @@ module Rigup
 
 		desc "new GIT_URL [PATH]", "setup new site"
 		def new(aGitUrl,aPath=nil)
-			aPath ||= File.basename(aGitUrl,'.git')
+			app_name = File.basename(aGitUrl,'.git')
+			aPath ||= app_name
 			init(
 				aPath,
-				git_url: aGitUrl
+				git_url: aGitUrl,
+				app_name: app_name,
+				user: ENV['USER']
 			)
 			FileUtils.mkdir_p(site_dir)
 			FileUtils.mkdir_p(File.join(site_dir,'releases'))

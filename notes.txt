@@ -1,3 +1,52 @@
+https://github.com/ahoward/wrap
+
+https://github.com/ahoward/session/tree/master
+
+bash = Session::Bash.new
+
+execute command, collecting output AND piping to screen :
+out,err = bash.execute('some command',stdout: STDOUT)
+
+out,err = run(aCommand,aDir,)
+
+SOLUTION :
+
+create mixin including Session::Bash
+add cd method eg.
+cd(@release_path) do
+	run "do this"
+	run "do that"
+end
+OR
+cd(@release_path)
+(also does Dir.chdir for consistency with other Ruby methods)
+
+run_in "ls",@release_path
+
+run(aCommand,aOptions)
+run fires exception if exit_status not 0
+
+silent do		# disconnects stdout
+	run 'this'
+	run 'that'
+end
+
+pipe_out do	# sends all output to stdout
+	run 'this'
+end
+
+
+Output Idea :
+
+say "Get File Listing..."
+run "ls"
+
+Get File Listing...
+> ls
+				current  releases  rigup.yml  shared
+				this and that
+
+
 From site root :
 
 > cd /var/www

@@ -2,7 +2,8 @@ require 'thor'
 require 'buzztools'
 require 'logger'
 require 'yaml'
-require 'buzztools/extras/shell_extras'
+require 'session'
+#require 'buzztools/extras/shell_extras'
 
 require_relative "rigup/version"
 require_relative "rigup/config"

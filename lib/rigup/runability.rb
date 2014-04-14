@@ -1,11 +1,36 @@
 module Rigup
 	module Runability
 
-		def run(aCommand,aDir=nil)
+		def shell
+			@shell ||= ::Session::Bash.new
+		end
+
+		def pwd
+			shell.execute("pwd", stdout: nil).first.strip
+		end
+
+		def cd(aPath,&block)
+			if block_given?
+				begin
+			 		before_path = pwd
+					cd(aPath)
+					yield aPath,before_path
+				ensure
+					cd(before_path)
+				end
+			else
+				aPath = File.expand_path(aPath)
+				Dir.chdir(aPath)
+				shell.execute("cd \"#{aPath}\"")
+			end
+			aPath
+		end
+
+		def run(aCommand)
 			@context.logger.debug aCommand
-			response = ::POpen4::shell(aCommand,aDir || @context.pwd)
-			raise Error, "Command Failed" unless (response && response[:exitcode]==0)
-			return response[:stdout]
+			response,errout = @shell.execute(aCommand,stdout: STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
+			raise Error, "Command Failed" unless @shell.exit_status==0
+			return response
 		end
 
 		def run_for_all(aCommand,aPath,aFilesOrDirs,aPattern=nil,aInvertPattern=false,aSudo=false)

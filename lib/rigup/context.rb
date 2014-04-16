@@ -4,10 +4,6 @@ module Rigup
 		attr_reader :config, :options, :argv, :env, :stdout, :stdin, :stderr, :key_chain, :credentials, :logger, :pwd, :variant
 		attr_writer :pwd
 
-		def sudo
-			''
-		end
-
 		def initialize(aValues=nil)
 			return if !aValues
 

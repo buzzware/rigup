@@ -18,7 +18,9 @@ module Rigup
 					file_config = YAML.load(String.from_file(f))
 					aConfig.merge!(file_config)
 				end
-				config = Rigup::Config.new(aConfig.merge(site_dir: @site_dir))
+				aConfig = aConfig.merge(site_dir: @site_dir)
+				aConfig[:user] ||= ENV['USER']
+				config = Rigup::Config.new(aConfig)
 				@context = Rigup::Context.new(
 					config: config,
 					logger: ::Logger.new(STDOUT),
@@ -100,7 +102,7 @@ module Rigup
 			end
 
 			def link_live
-				ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')))
+				ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')),"#{config[:user]}:#{config[:group]}")
 			end
 
 			def cleanup
@@ -125,7 +127,6 @@ module Rigup
 					run cmdline
 				end
 			end
-
 		end
 
 		public
@@ -152,6 +153,7 @@ module Rigup
 		def deploy(aPath=nil)
 			init(aPath)
 			update_cache
+			#gem 'debugger'; require 'debugger'; debugger
 			release
 			call_release_command(:install)     # call install_command if defined eg. defaults to "thor deploy:install" eg. make changes to files
 			call_release_command(:block)

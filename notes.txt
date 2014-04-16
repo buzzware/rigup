@@ -1,3 +1,11 @@
+Permissions for sudo :
+
+> sudo nano /etc/sudoers
+Add "%deploy ALL=NOPASSWD: ALL" after %sudo
+
+> groupadd deploy
+> sudo adduser gary deploy
+
 https://github.com/ahoward/wrap
 
 https://github.com/ahoward/session/tree/master

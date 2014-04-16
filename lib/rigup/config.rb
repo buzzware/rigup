@@ -11,6 +11,7 @@ module Rigup
 			branch: String,
 			commit: String,
 			stage: 'live',    # or 'staging' or 'development'
+			sudo: 'sudo',
 			block_command: nil,
 			install_command: 'thor deploy:install',
 			restart_command: 'thor deploy:restart',

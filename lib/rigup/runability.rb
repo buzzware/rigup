@@ -1,12 +1,12 @@
 module Rigup
 	module Runability
 
-		def shell
-			@shell ||= ::Session::Bash.new
+		def bash
+			@bash ||= ::Session::Bash.new
 		end
 
 		def pwd
-			shell.execute("pwd", stdout: nil).first.strip
+			bash.execute("pwd", stdout: nil).first.strip
 		end
 
 		def cd(aPath,&block)
@@ -15,21 +15,24 @@ module Rigup
 			 		before_path = pwd
 					cd(aPath)
 					yield aPath,before_path
+				rescue Exception => e
+					@context.logger.info e.message
 				ensure
 					cd(before_path)
 				end
 			else
 				aPath = File.expand_path(aPath)
 				Dir.chdir(aPath)
-				shell.execute("cd \"#{aPath}\"")
+				bash.execute("cd \"#{aPath}\"")
 			end
 			aPath
 		end
 
-		def run(aCommand)
+		def run(aCommand,aOptions=nil)
+			aOptions ||= {}
 			@context.logger.debug aCommand
-			response,errout = @shell.execute(aCommand,stdout: STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
-			raise Error, "Command Failed" unless @shell.exit_status==0
+			response,errout = bash.execute(aCommand,stdout: STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
+			raise "Command Failed" unless bash.exit_status==0 or aOptions[:raise]==false
 			return response
 		end
 

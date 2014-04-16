@@ -5,8 +5,8 @@ module Rigup
 			ext = Buzztools::File.extension(aFile,aExtendedExtension)
 			no_ext = Buzztools::File.no_extension(aFile,aExtendedExtension)
 			dir = File.dirname(aFile)
-			run "#{@context.sudo} mv -f #{no_ext}.#{@context.config[:stage]}.#{ext} #{aFile}"
-			run "#{@context.sudo} rm -f #{no_ext}.*.#{ext}"
+			run "#{@context.config[:sudo]} mv -f #{no_ext}.#{@context.config[:stage]}.#{ext} #{aFile}"
+			run "#{@context.config[:sudo]} rm -f #{no_ext}.*.#{ext}"
 		end
 
 		# Especially for modifiying behaviour eg. of FCKEditor without upsetting the standard files
@@ -17,8 +17,8 @@ module Rigup
 		def override_folder(aFolder,aOverrideFolder=nil,aRemove=true)
 			aFolder = aFolder.desuffix('/')
 			aOverrideFolder ||= (aFolder+'_override')
-			run "#{@context.sudo} cp -vrf #{aOverrideFolder}/* #{aFolder}/"
-			run "#{@context.sudo} rm -rf #{aOverrideFolder}" if aRemove
+			run "#{@context.config[:sudo]} cp -vrf #{aOverrideFolder}/* #{aFolder}/"
+			run "#{@context.config[:sudo]} rm -rf #{aOverrideFolder}" if aRemove
 		end
 
 
@@ -27,7 +27,7 @@ module Rigup
 			aUser ||= @user
 			aGroup ||= @group
 
-			run "#{@context.sudo} chown -R #{aUser}:#{aGroup} #{aPath.ensure_suffix('/')}"
+			run "#{@context.config[:sudo]} chown -R #{aUser}:#{aGroup} #{aPath.ensure_suffix('/')}"
 			run_for_all("chmod 755",aPath,:dirs)									# !!! perhaps reduce other permissions
 			run_for_all("chmod 644",aPath,:files)
 			run_for_all("chmod g+s",aPath,:dirs)
@@ -59,7 +59,7 @@ module Rigup
 					#permissions_for_web_writable("#{aPath}/tmp")
 					make_public_cache_dir("#{aPath}/tmp")
 
-					run "#{@context.sudo} chown #{@apache_user} #{aPath}/config/environment.rb" unless DEV_MODE	# very important for passenger, which uses the owner of this file to run as
+					run "#{@context.config[:sudo]} chown #{@apache_user} #{aPath}/config/environment.rb" unless DEV_MODE	# very important for passenger, which uses the owner of this file to run as
 
 				when 'spree' then
 					internal_permissions(aPath,'rails')
@@ -80,11 +80,11 @@ module Rigup
 			cmd << "#{aSudo} rm -rf #{aFrom}"
 			cmd << "#{aSudo} ln -sf #{aTo} #{aFrom}"
 			cmd << "#{aSudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
-			run cmd.join(' && ')
+			run(cmd.join(' && '),raise: false)
 		end
 
 		def make_public_cache_dir(aStartPath)
-			run "#{@context.sudo} mkdir -p #{aStartPath}"
+			run "#{@context.config[:sudo]} mkdir -p #{aStartPath}"
 			permissions_for_web(aStartPath)
 			permissions_for_web_writable(aStartPath)
 		end

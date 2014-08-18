@@ -32,6 +32,8 @@ module Rigup
 			aOptions ||= {}
 			@context.logger.debug aCommand
 			response,errout = bash.execute(aCommand,stdout: STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
+			@context.logger.debug errout if errout.to_nil
+			@context.logger.debug response if response.to_nil
 			raise "Command Failed" unless bash.exit_status==0 or aOptions[:raise]==false
 			return response
 		end

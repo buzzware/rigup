@@ -3,7 +3,7 @@ require 'git'
 module Rigup
 	class GitRepo
 
-		include Rigup::Runability
+		include Rigup::Utils::Run
 
 		attr_reader :git,:configured
 

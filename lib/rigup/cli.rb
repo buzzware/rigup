@@ -1,12 +1,18 @@
 module Rigup
 	class Cli < Thor
 
-		include Rigup::Runability
-		include Rigup::InstallUtils
-
-		attr_reader :context, :release_path
+		include Rigup::Utils::Run
+		include Rigup::Utils::Install
 
 		no_commands do
+
+			def logger
+		    @logger ||= ::Logger.new(STDOUT)
+      end
+
+			def config
+				@context.config
+			end
 
 			def init(aPath=nil,aConfig={})
 				return if @initialised
@@ -28,20 +34,18 @@ module Rigup
 				)
 			end
 
-			def site_dir
-				@site_dir
-			end
+			attr_reader :context, :release_path, :site_dir
+
+			def shared_path
+        @shared_path ||= File.expand_path('shared',site_dir)
+      end
 
 			def cache_dir
-				File.join(@site_dir,'shared','cached-copy')
+				File.join(site_dir,'shared','cached-copy')
 			end
 
-			def config
-				@context.config
-			end
-			
 			def repo
-				@repo ||= GitRepo.new(@context)
+				@repo ||= GitRepo.new(context)
 			end
 
 			# Prepares repo in cache dir for site
@@ -102,16 +106,16 @@ module Rigup
 			end
 
 			def link_live
-				ensure_link(@release_path,File.expand_path(File.join(site_dir,'current')),"#{config[:user]}:#{config[:group]}")
+				ensure_link(release_path,File.expand_path(File.join(site_dir,'current')),"#{config[:user]}:#{config[:group]}")
 			end
 
 			def cleanup
 				@releases = run("ls -x #{@releases_path}").split.sort
 		    count = (@keep_releases || 3).to_i
 		    if count >= @releases.length
-		      @context.logger.info "no old releases to clean up"
+		      logger.info "no old releases to clean up"
 		    else
-			    @context.logger.info "keeping #{count} of #{@releases.length} deployed releases"
+			    logger.info "keeping #{count} of #{@releases.length} deployed releases"
 
 		      directories = (@releases - @releases.last(count)).map { |r|
 		        File.join(@releases_path, r)
@@ -123,7 +127,7 @@ module Rigup
 
 			def call_release_command(aCommand)
 				return unless cmdline = config["#{aCommand}_command".to_sym].to_s.strip.to_nil
-				cd @release_path do
+				cd release_path do
 					run cmdline
 				end
 			end
@@ -162,5 +166,15 @@ module Rigup
 			call_release_command(:unblock)
 			cleanup
 		end
+
+		desc "restart [PATH]", "restart the given site"
+		def restart(aPath=nil)
+			init(aPath)
+			return unless cmdline = config["restart_command".to_sym].to_s.strip.to_nil
+			cd File.join(site_dir,'current') do
+				run cmdline
+			end
+		end
+
 	end
 end

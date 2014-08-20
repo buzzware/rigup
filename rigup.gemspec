@@ -18,8 +18,8 @@ Gem::Specification.new do |s|
 	s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
 	s.test_files    = s.files.grep(%r{^(test|spec|features)/})
 
-  s.add_dependency 'bundler', '~>1.5.3'
-  s.add_dependency 'thor', '~> 0.19.1'
+  s.add_dependency 'bundler'#, '~>1.5.3'
+  s.add_dependency 'thor'#, '~> 0.19.1'
 
 
   s.add_development_dependency 'rspec', '~>2.14.0'

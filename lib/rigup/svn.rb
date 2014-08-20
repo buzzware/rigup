@@ -46,7 +46,7 @@ module Rigup
 				'repository' => @repository,
 				'source' => @vcs_app_path,
 				'branch' => @branch,
-				'destination' => @release_path,
+				'destination' => release_path,
 				'revision' => @revision
 			}
 			result.merge!(aMergeOptions) if aMergeOptions

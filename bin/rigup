@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
-#require "rubygems"
+#require "rubygems" - checkout rake for an interesting example of the bin command
 require 'rigup'
 Rigup::Cli.start(ARGV)

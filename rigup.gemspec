@@ -20,29 +20,10 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'bundler'#, '~>1.5.3'
   s.add_dependency 'thor'#, '~> 0.19.1'
-
-
-  s.add_development_dependency 'rspec', '~>2.14.0'
-  #s.add_development_dependency('rspec')
-
-  s.add_development_dependency('rake')
-  #s.add_development_dependency('rspec-core')
-  #s.add_development_dependency('rdoc')
-	#s.add_development_dependency('aruba')
-	#s.add_development_dependency('debugger')
-  #s.add_runtime_dependency('gli','2.5.0')
-	#s.add_runtime_dependency('termios')
-	#s.add_runtime_dependency('highline')
 	s.add_runtime_dependency('git')
-	#s.add_runtime_dependency('middleman')
-	s.add_runtime_dependency 'buzztools', '~>0.0.6'
-	#s.add_runtime_dependency('POpen4')
 	s.add_runtime_dependency('session')
 	# https://github.com/geemus/formatador
-	#s.add_runtime_dependency('bitbucket_rest_api')
-	#s.add_runtime_dependency('osx_keychain')
-	#s.add_runtime_dependency('json')
-	#s.add_runtime_dependency('net_dav')
-	#s.add_runtime_dependency('net-ssh')
-	#s.add_runtime_dependency('system_timer')
+
+  s.add_development_dependency 'rspec', '~>2.14.0'
+  s.add_development_dependency('rake')
 end

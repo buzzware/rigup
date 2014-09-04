@@ -1,6 +1,6 @@
 module Rigup
 
-	class Config < Buzztools::Config
+	class Config < Rigup::Utils::Config
 
 		DEFAULTS = {
 			app_name: String,

@@ -18,7 +18,7 @@ module Rigup
 				return if @initialised
 				@initialised = true
 				aPath ||= aConfig[:site_dir] || Dir.pwd
-				@site_dir = Buzztools::File.real_path(aPath) rescue File.expand_path(aPath)
+				@site_dir = Rigup::Utils::File.real_path(aPath) rescue File.expand_path(aPath)
 				@releases_path = File.join(@site_dir,'releases')
 				if File.exists?(f=File.join(@site_dir,'rigup.yml'))
 					file_config = YAML.load(String.from_file(f))
@@ -157,7 +157,6 @@ module Rigup
 		def deploy(aPath=nil)
 			init(aPath)
 			update_cache
-			#gem 'debugger'; require 'debugger'; debugger
 			release
 			call_release_command(:install)     # call install_command if defined eg. defaults to "thor deploy:install" eg. make changes to files
 			call_release_command(:block)

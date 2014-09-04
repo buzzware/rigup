@@ -3,8 +3,8 @@ module Rigup
 		module Install
 
 			def select_suffixed_file(aFile,aExtendedExtension=false)
-				ext = Buzztools::File.extension(aFile,aExtendedExtension)
-				no_ext = Buzztools::File.no_extension(aFile,aExtendedExtension)
+				ext = Rigup::Utils::File.extension(aFile,aExtendedExtension)
+				no_ext = Rigup::Utils::File.no_extension(aFile,aExtendedExtension)
 				dir = File.dirname(aFile)
 				run "#{context.config[:sudo]} mv -f #{no_ext}.#{context.config[:stage]}.#{ext} #{aFile}"
 				run "#{context.config[:sudo]} rm -f #{no_ext}.*.#{ext}"

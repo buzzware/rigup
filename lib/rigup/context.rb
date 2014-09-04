@@ -9,7 +9,7 @@ module Rigup
 
 			#is_client = !!(aValues[:key_chain] || aValues[:global_options] || aValues[:options])
 			@config = aValues[:config]
-			@pwd = Buzztools::File.real_path(aValues[:pwd] || (@config && @config[:folder]) || Dir.pwd)
+			@pwd = Rigup::Utils::File.real_path(aValues[:pwd] || (@config && @config[:folder]) || Dir.pwd)
 			@options = aValues[:options]
 			@argv = aValues[:argv]
 			@env = aValues[:env]
@@ -47,7 +47,7 @@ module Rigup
     end
 
 		def find_git_root
-			git_folder = BuzzTools::File.find_upwards(@pwd,'.git')
+			git_folder = Rigup::Utils::File.find_upwards(@pwd,'.git')
 			return git_folder && git_folder.chomp('/.git')
 		end
 

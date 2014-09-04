@@ -1,13 +1,13 @@
 require 'thor'
-require 'buzztools'
 require 'logger'
 require 'yaml'
 require 'session'
-#require 'buzztools/extras/shell_extras'
 
 require_relative "rigup/version"
 require_relative "rigup/config"
 require_relative "rigup/context"
+require_relative "rigup/utils/config"
+require_relative "rigup/utils/file"
 require_relative "rigup/utils/run"
 require_relative "rigup/utils/install"
 require_relative "rigup/git_repo"

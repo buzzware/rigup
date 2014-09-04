@@ -150,7 +150,9 @@ module Rigup
 			FileUtils.mkdir_p(File.join(site_dir,'shared'))
 
 			#+ create rigup.yml if doesn't exist, including option values
-			context.config.to_hash.filter_exclude(:site_dir).to_yaml.to_file(File.join(site_dir,'rigup.yml'))
+			h = context.config.to_hash
+			h.delete :site_dir
+			h.to_yaml.to_file(File.join(site_dir,'rigup.yml'))
 		end
 
 		desc "deploy [PATH]", "deploy the given site"

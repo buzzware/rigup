@@ -6,6 +6,7 @@ require 'session'
 require_relative "rigup/version"
 require_relative "rigup/config"
 require_relative "rigup/context"
+require_relative "rigup/utils/extend_stdlib"
 require_relative "rigup/utils/config"
 require_relative "rigup/utils/file"
 require_relative "rigup/utils/run"

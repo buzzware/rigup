@@ -7,7 +7,7 @@ module Rigup
 			end
 
 			def pwd
-				bash.execute("pwd", :stdout => nil).first.strip
+				bash.execute("pwd", {:stdout => nil}).first.strip
 			end
 
 			def cd(aPath,&block)
@@ -22,7 +22,7 @@ module Rigup
 						cd(before_path)
 					end
 				else
-					aPath = File.expand_path(aPath)
+					aPath = ::File.expand_path(aPath)
 					Dir.chdir(aPath)
 					bash.execute("cd \"#{aPath}\"")
 				end

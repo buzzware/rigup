@@ -15,7 +15,7 @@ module Rigup
 			:block_command => nil,
 			:install_command => 'bundle exec thor deploy:install',
 			:restart_command => 'bundle exec thor deploy:restart',
-			:unblock_command => nil,
+			:unblock_command => nil
 		}
 
 		def initialize(aValues=nil)

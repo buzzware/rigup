@@ -81,7 +81,7 @@ module Rigup
 				cmd << "#{aSudo} rm -rf #{aFrom}"
 				cmd << "#{aSudo} ln -sf #{aTo} #{aFrom}"
 				cmd << "#{aSudo} chown -h #{aUserGroup} #{aFrom}" if aUserGroup
-				run(cmd.join(' && '),:raise => false)
+				run(cmd.join(' && '),{:raise => false})
 			end
 
 			def make_public_cache_dir(aStartPath)

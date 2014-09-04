@@ -24,13 +24,13 @@ module Rigup
 					file_config = YAML.load(String.from_file(f))
 					aConfig.merge!(file_config)
 				end
-				aConfig = aConfig.merge(site_dir: @site_dir)
+				aConfig = aConfig.merge(:site_dir => @site_dir)
 				aConfig[:user] ||= ENV['USER']
 				config = Rigup::Config.new(aConfig)
 				@context = Rigup::Context.new(
-					config: config,
-					logger: ::Logger.new(STDOUT),
-					pwd: Dir.pwd
+					:config => config,
+					:logger => ::Logger.new(STDOUT),
+					:pwd => Dir.pwd
 				)
 			end
 
@@ -141,9 +141,9 @@ module Rigup
 			aPath ||= app_name
 			init(
 				aPath,
-				git_url: aGitUrl,
-				app_name: app_name,
-				user: ENV['USER']
+				:git_url => aGitUrl,
+				:app_name => app_name,
+				:user => ENV['USER']
 			)
 			FileUtils.mkdir_p(site_dir)
 			FileUtils.mkdir_p(File.join(site_dir,'releases'))

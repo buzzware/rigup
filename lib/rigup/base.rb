@@ -23,9 +23,9 @@ module Rigup
 
 			    def context
 				    @context ||= Rigup::Context.new(
-							config: config,
-							logger: logger,
-							pwd: Dir.pwd,
+							:config => config,
+							:logger => logger,
+							:pwd => Dir.pwd,
 						)
 			    end
 

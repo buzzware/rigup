@@ -7,7 +7,7 @@ module Rigup
 			end
 
 			def pwd
-				bash.execute("pwd", stdout: nil).first.strip
+				bash.execute("pwd", :stdout => nil).first.strip
 			end
 
 			def cd(aPath,&block)
@@ -32,7 +32,7 @@ module Rigup
 			def run(aCommand,aOptions=nil)
 				aOptions ||= {}
 				logger.debug aCommand
-				response,errout = bash.execute(aCommand,stdout: STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
+				response,errout = bash.execute(aCommand,:stdout => STDOUT)  #   ::POpen4::shell(aCommand,aDir || @context.pwd)
 				logger.debug errout if errout.to_nil
 				logger.debug response if response.to_nil
 				raise "Command Failed" unless bash.exit_status==0 or aOptions[:raise]==false
